@@ -1,16 +1,10 @@
-# hotel_bengkalis
+# Aplikasi Hotel Bengkalis
+### Aplikasi pencarian Hotel di Bengkalis dengan Algoritma A*
 
-A new Flutter project.
+## Tech
+properly:
+- [Bootstrap] - Bootstrap merupakan sebuah library atau kumpulan dari berbagai fungsi yang terdapat di framework CSS dan dibuat secara khusus dibagian pengembangan pada front-end website.
+- [CSS] - Cascading style sheets yang berguna untuk menyederhanakan proses pembuatan website dengan mengatur elemen yang tertulis dibahasa markup.
+- [Laragon] - Aplikasi pengembangan web yang memungkinkan pengembang untuk: Membuat server web lokal, Mengelola basis data, Menguji aplikasi web tanpa terhubung ke internet, Menggunakan program-program pendukung untuk pengembangan web modern.
+- [PHP] - Salah satu Bahasa scripting open source yang banyak digunakan oleh Web Developer untuk pengembangan Web.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
