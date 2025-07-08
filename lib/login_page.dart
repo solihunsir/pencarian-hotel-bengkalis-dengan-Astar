@@ -22,6 +22,10 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
+  int _loginAttempts = 0; 
+  DateTime? _lockoutTime; 
+  bool _isInputEnabled = true; 
+
   void _showProfessionalNotification({
     required BuildContext context, 
     required String message, 
@@ -60,6 +64,16 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _login() async {
+    if (_lockoutTime != null && DateTime.now().isBefore(_lockoutTime!)) {
+      final remainingTime = _lockoutTime!.add(Duration(minutes: 5)).difference(DateTime.now()).inMinutes;
+      _showProfessionalNotification(
+        context: context,
+        message: 'Anda harus menunggu $remainingTime menit lagi untuk mencoba login.',
+        isError: true,
+      );
+      return;
+    }
+
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
@@ -86,12 +100,35 @@ class _LoginPageState extends State<LoginPage> {
             builder: (context) => HotelListView(username: username),
           ),
         );
+
+        _loginAttempts = 0;
+        _lockoutTime = null;
+        _isInputEnabled = true; 
       } else {
-        _showProfessionalNotification(
-          context: context, 
-          message: response['message'],
-          isError: true,
-        );
+        _loginAttempts++;
+        if (_loginAttempts >= 5) {
+          _lockoutTime = DateTime.now(); 
+          _isInputEnabled = false; 
+          _showProfessionalNotification(
+            context: context, 
+            message: 'Anda telah mencoba login 5 kali gagal. Silakan tunggu 5 menit.',
+            isError: true,
+          );
+
+          Future.delayed(Duration(minutes: 1), () {
+            setState(() {
+              _isInputEnabled = true; 
+              _loginAttempts = 0; 
+              _lockoutTime = null; 
+            });
+          });
+        } else {
+          _showProfessionalNotification(
+            context: context, 
+            message: 'Kesalahan login! Kesempatan tinggal ${5 - _loginAttempts} kali.',
+            isError: true,
+          );
+        }
       }
     }
   }
@@ -162,8 +199,12 @@ class _LoginPageState extends State<LoginPage> {
                           if (value == null || value.isEmpty) {
                             return 'Email harus diisi';
                           }
+                          if (!value.contains('@')) {
+                            return 'Email tidak valid';
+                          }
                           return null;
                         },
+                        enabled: _isInputEnabled, 
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -198,8 +239,21 @@ class _LoginPageState extends State<LoginPage> {
                           if (value == null || value.isEmpty) {
                             return 'Password harus diisi';
                           }
+                          if (value.length < 8) {
+                            return 'Password harus minimal 8 karakter';
+                          }
+                          if (!RegExp(r'[0-9]').hasMatch(value)) {
+                            return 'Password harus mengandung angka';
+                          }
+                          if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
+                            return 'Password harus mengandung simbol';
+                          }
+                          if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                            return 'Password harus mengandung huruf kapital';
+                          }
                           return null;
                         },
+                        enabled: _isInputEnabled, 
                       ),
                       const SizedBox(height: 24),
                       _isLoading
@@ -207,7 +261,7 @@ class _LoginPageState extends State<LoginPage> {
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
                             )
                           : ElevatedButton(
-                              onPressed: _login,
+                              onPressed: _isInputEnabled ? _login : null, 
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color.fromARGB(255, 255, 255, 255),
                                 padding: const EdgeInsets.symmetric(

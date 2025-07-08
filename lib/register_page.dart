@@ -17,6 +17,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController(); // Tambahkan controller untuk nomor HP
 
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -66,6 +67,7 @@ class _RegisterPageState extends State<RegisterPage> {
         username: _usernameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
+        phone: _phoneController.text.trim(), // Kirim nomor HP ke auth service
       );
 
       setState(() => _isLoading = false);
@@ -134,7 +136,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextFormField(
                         controller: _usernameController,
                         decoration: InputDecoration(
-                          labelText: 'Username',
+                          labelText: 'Nama Lengkap',
                           labelStyle: GoogleFonts.poppins(),
                           prefixIcon: Icon(Icons.person, color: Colors.teal[800]),
                           border: OutlineInputBorder(
@@ -147,7 +149,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Username harus diisi';
+                            return 'Nama lengkap harus diisi';
+                          }
+                          if (RegExp(r'\d').hasMatch(value)) {
+                            return 'Nama lengkap tidak boleh mengandung angka';
                           }
                           return null;
                         },
@@ -170,6 +175,37 @@ class _RegisterPageState extends State<RegisterPage> {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Email harus diisi';
+                          }
+                          if (!value.contains('@')) {
+                            return 'Email tidak valid';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _phoneController,
+                        decoration: InputDecoration(
+                          labelText: 'Nomor HP',
+                          labelStyle: GoogleFonts.poppins(),
+                          prefixIcon: Icon(Icons.phone, color: Colors.teal[800]),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.teal[800]!, width: 2),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Nomor HP harus diisi';
+                          }
+                          if (value.length > 13) {
+                            return 'Nomor HP tidak boleh lebih dari 13 angka';
+                          }
+                          if (!RegExp(r'^\d+$').hasMatch(value)) {
+                            return 'Nomor HP hanya boleh angka';
                           }
                           return null;
                         },
@@ -207,8 +243,21 @@ class _RegisterPageState extends State<RegisterPage> {
                           if (value == null || value.isEmpty) {
                             return 'Password harus diisi';
                           }
+                          if (value.length < 8) {
+                            return 'Password harus minimal 8 karakter';
+                          }
+                          if (!RegExp(r'[0-9]').hasMatch(value)) {
+                            return 'Password harus mengandung angka';
+                          }
+                          if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
+                            return 'Password harus mengandung simbol';
+                          }
+                          if (!RegExp(r'[A-Z]').hasMatch(value)) { 
+                            return 'Password harus mengandung huruf kapital';
+                          }
                           return null;
                         },
+
                       ),
                       const SizedBox(height: 24),
 

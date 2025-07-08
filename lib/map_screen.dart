@@ -60,7 +60,7 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _fetchMarkers() async {
     try {
       final response = await http.get(
-          Uri.parse('http://10.11.8.25/hotel_bengkalis/api/input_lokasi.php'));
+          Uri.parse('http://192.168.0.132/hotel_bengkalis/api/input_lokasi.php'));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);

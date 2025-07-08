@@ -11,13 +11,13 @@ class AdminManagementPage extends StatefulWidget {
 class _AdminManagementPageState extends State<AdminManagementPage>
     with SingleTickerProviderStateMixin {
   static const String URL_READ =
-      'http://10.11.8.25/hotel_bengkalis/api/read_hotel.php';
+      'http://192.168.0.132/hotel_bengkalis/api/read_hotel.php';
   static const String URL_CREATE =
-      'http://10.11.8.25/hotel_bengkalis/api/create_hotel.php';
+      'http://192.168.0.132/hotel_bengkalis/api/create_hotel.php';
   static const String URL_UPDATE =
-      'http://10.11.8.25/hotel_bengkalis/api/update_hotel.php';
+      'http://192.168.0.132/hotel_bengkalis/api/update_hotel.php';
   static const String URL_DELETE_BASE =
-      'http://10.11.8.25/hotel_bengkalis/api/delete_hotel.php?id=';
+      'http://192.168.0.132/hotel_bengkalis/api/delete_hotel.php?id=';
 
   List _recipes = [];
   List _filteredRecipes = [];

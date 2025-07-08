@@ -15,7 +15,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> _updateUserProfile() async {
     int userId = 1;  
 
-    var url = Uri.parse('http://10.11.8.25/hotel_bengkalis/api/login/update_user_profile.php');
+    var url = Uri.parse('http://192.168.137.1hotel_bengkalis/api/login/update_user_profile.php');
     Map<String, dynamic> data = {
       'user_id': userId,
       'username': _usernameController.text,

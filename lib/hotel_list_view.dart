@@ -7,17 +7,19 @@ import 'package:string_extensions/string_extensions.dart';
 import 'about_developer.dart';
 import 'detail_hotel.dart';
 import 'hotel.dart';
+import 'package:google_fonts/google_fonts.dart'; // Import Google Fonts
 
 class HotelListView extends StatefulWidget {
-  const HotelListView({Key? key, required username}) : super(key: key);
+  final String username; // Menambahkan parameter username
+
+  const HotelListView({Key? key, required this.username}) : super(key: key);
 
   @override
   HotelListViewState createState() => HotelListViewState();
 }
 
 class HotelListViewState extends State<HotelListView> {
-  static const String URL =
-      'http://10.11.8.25/hotel_bengkalis/api/read_hotel.php';
+  static const String URL = 'http://192.168.0.132/hotel_bengkalis/api/read_hotel.php';
   late Future<List<Hotel>> result_data;
   int _selectedIndex = 0;
   String _selectedCategory = 'hotel';
@@ -27,7 +29,9 @@ class HotelListViewState extends State<HotelListView> {
   final Color backgroundColor = Color(0xFFF5F5F5);
   final TextEditingController _searchController = TextEditingController();
   String _searchText = '';
-  String _selectedFilter = 'Harga Tertinggi'; 
+  String _selectedFilter = 'Harga Tertinggi';
+  
+  get highlightColor => null;
 
   @override
   void initState() {
@@ -92,8 +96,9 @@ class HotelListViewState extends State<HotelListView> {
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 'HOTEL BENGKALIS',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
               background: Image.network(
@@ -109,12 +114,22 @@ class HotelListViewState extends State<HotelListView> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Search Hotel & Wisma ...',
-                  prefixIcon: Icon(Icons.search),
+                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  prefixIcon: Icon(Icons.search, color: primaryColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
                   ),
                   filled: true,
                   fillColor: Colors.white,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: primaryColor, width: 2),
+                  ),
                 ),
               ),
             ),
@@ -127,7 +142,7 @@ class HotelListViewState extends State<HotelListView> {
                 children: [
                   Text(
                     'Popular ${_selectedCategory.capitalize}',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -204,10 +219,26 @@ class HotelListViewState extends State<HotelListView> {
     );
   }
 
-  Future<void> _pullRefresh() async {
-    setState(() {
-      result_data = _fetchHotel();
-    });
+  Future<List<Hotel>> _fetchHotel() async {
+    var uri = Uri.parse(URL);
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        List jsonData = jsonResponse['data'];
+        return jsonData.map((hotel) => Hotel.fromJson(hotel)).toList();
+      } else {
+        throw Exception('Failed to load data from API');
+      }
+    } catch (e) {
+      print('Error: $e');
+      rethrow;
+    }
+  }
+
+  int _parsePrice(String price) {
+    String sanitizedPrice = price.replaceAll(RegExp(r'[^\d]'), '');
+    return int.tryParse(sanitizedPrice) ?? 0;
   }
 
   SliverList _hotelListView(List<Hotel> data) {
@@ -234,69 +265,72 @@ class HotelListViewState extends State<HotelListView> {
     );
   }
 
-  Future<List<Hotel>> _fetchHotel() async {
-  var uri = Uri.parse(URL);
-  try {
-    final response = await http.get(uri);
-    if (response.statusCode == 200) {
-      var jsonResponse = jsonDecode(response.body);
-      List jsonData = jsonResponse['data'];
-      return jsonData.map((hotel) => Hotel.fromJson(hotel)).toList();
-    } else {
-      throw Exception('Failed to load data from API');
-    }
-  } catch (e) {
-    print('Error: $e'); 
-    rethrow;  
-  }
-}
-
-  int _parsePrice(String price) {
-    String sanitizedPrice = price.replaceAll(RegExp(r'[^\d]'), '');
-    return int.tryParse(sanitizedPrice) ?? 0; 
-  }
-
   Widget _tile(BuildContext context, Hotel data) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      margin: EdgeInsets.only(bottom: 16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
         onTap: () => _navigateToDetail(context, data),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(15),
-                bottomLeft: Radius.circular(15),
-              ),
-              child: Image.network(
-                data.imageUrl,
-                width: 120,
-                height: 120,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      data.namaHotel,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 5),
-                    Text('Rp. ${data.harga}'),
-                    SizedBox(height: 5),
-                    Text(data.alamat),
-                  ],
+        child: Container(
+          height: 160,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  bottomLeft: Radius.circular(20),
+                ),
+                child: Image.network(
+                  data.imageUrl,
+                  width: 140,
+                  height: 160,
+                  fit: BoxFit.cover,
                 ),
               ),
-            ),
-          ],
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        data.namaHotel,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Rp. ${data.harga}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: highlightColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Expanded(
+                        child: Text(
+                          data.alamat,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+              
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -304,35 +338,57 @@ class HotelListViewState extends State<HotelListView> {
 
   Widget _gridTile(BuildContext context, Hotel data) {
     return Card(
-      margin: EdgeInsets.all(8),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
         onTap: () => _navigateToDetail(context, data),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               child: Image.network(
                 data.imageUrl,
                 width: double.infinity,
-                height: 100,
+                height: 120,
                 fit: BoxFit.cover,
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     data.namaHotel,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 5),
-                  Text('Rp. ${data.harga}'),
-                  SizedBox(height: 5),
-                  Text(data.alamat),
+                  SizedBox(height: 6),
+                  Text(
+                    'Rp. ${data.harga}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: highlightColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    data.alamat,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 6),
                 ],
               ),
             ),
